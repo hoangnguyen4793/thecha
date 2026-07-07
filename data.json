@@ -1,0 +1,161 @@
+{
+  "admin": {
+    "code": "admin",
+    "pin": "123456",
+    "name": "Quản trị viên"
+  },
+  "employees": [
+    {
+      "id": "e1",
+      "name": "Linh Trần",
+      "code": "linhtran",
+      "pin": "1111",
+      "type": "hourly",
+      "rate": 35000
+    },
+    {
+      "id": "e2",
+      "name": "Minh Phạm",
+      "code": "minhpham",
+      "pin": "2222",
+      "type": "monthly",
+      "rate": 6000000
+    },
+    {
+      "id": "e3",
+      "name": "An Nguyễn",
+      "code": "annguyen",
+      "pin": "3333",
+      "type": "hourly",
+      "rate": 42000
+    },
+    {
+      "id": "e4",
+      "name": "Hà My",
+      "code": "hamy",
+      "pin": "4444",
+      "type": "monthly",
+      "rate": 8500000
+    }
+  ],
+  "shifts": [
+    {
+      "id": "s1",
+      "employeeId": "e1",
+      "checkIn": "2026-07-01T01:02:00.000Z",
+      "checkOut": "2026-07-01T06:15:00.000Z"
+    },
+    {
+      "id": "s2",
+      "employeeId": "e1",
+      "checkIn": "2026-07-01T10:00:00.000Z",
+      "checkOut": "2026-07-03T15:20:00.000Z"
+    },
+    {
+      "id": "s3",
+      "employeeId": "e1",
+      "checkIn": "2026-07-06T03:05:00.000Z",
+      "checkOut": "2026-07-06T08:00:00.000Z"
+    },
+    {
+      "id": "s4",
+      "employeeId": "e2",
+      "checkIn": "2026-07-01T01:30:00.000Z",
+      "checkOut": "2026-07-01T02:35:00.000Z"
+    },
+    {
+      "id": "s5",
+      "employeeId": "e2",
+      "checkIn": "2026-07-02T01:28:00.000Z",
+      "checkOut": "2026-07-02T10:40:00.000Z"
+    },
+    {
+      "id": "s6",
+      "employeeId": "e2",
+      "checkIn": "2026-07-04T02:30:00.000Z",
+      "checkOut": "2026-07-04T04:30:00.000Z"
+    },
+    {
+      "id": "s7",
+      "employeeId": "e3",
+      "checkIn": "2026-06-30T18:02:00.000Z",
+      "checkOut": "2026-07-02T14:55:00.000Z"
+    },
+    {
+      "id": "s8",
+      "employeeId": "e3",
+      "checkIn": "2026-07-05T07:10:00.000Z",
+      "checkOut": "2026-07-05T15:00:00.000Z"
+    },
+    {
+      "id": "s9",
+      "employeeId": "e4",
+      "checkIn": "2026-07-01T02:10:00.000Z",
+      "checkOut": "2026-07-01T10:05:00.000Z"
+    },
+    {
+      "id": "s10",
+      "employeeId": "e4",
+      "checkIn": "2026-07-01T01:12:00.000Z",
+      "checkOut": "2026-07-03T10:15:00.000Z"
+    },
+    {
+      "id": "s11",
+      "employeeId": "e4",
+      "checkIn": "2026-07-07T02:00:00.000Z",
+      "checkOut": null
+    }
+  ],
+  "penalties": [
+    {
+      "id": "p1",
+      "employeeId": "e1",
+      "amount": 30000,
+      "reason": "Đi muộn 15 phút",
+      "createdAt": "2026-07-03T03:00:00.000Z"
+    },
+    {
+      "id": "p2",
+      "employeeId": "e3",
+      "amount": 50000,
+      "reason": "Làm sai quy trình pha chế",
+      "createdAt": "2026-07-05T04:30:00.000Z"
+    },
+    {
+      "id": "p3",
+      "employeeId": "e4",
+      "amount": 70000,
+      "reason": "Quên kiểm kê cuối ca",
+      "createdAt": "2026-07-06T12:00:00.000Z"
+    },
+    {
+      "id": "136fa945-5b38-4f45-92b7-6f46cebd5584",
+      "employeeId": "e1",
+      "amount": 50000,
+      "reason": "đi làm muộn",
+      "createdAt": "2026-07-07T07:42:24.841Z"
+    },
+    {
+      "id": "32b2ff77-46ef-45dd-8094-c75bd734ec82",
+      "employeeId": "e1",
+      "amount": 50000,
+      "reason": "đi làm muộn",
+      "createdAt": "2026-07-07T07:59:26.097Z"
+    },
+    {
+      "id": "3750a718-5f79-48d3-8d78-72cb0fe72150",
+      "employeeId": "e1",
+      "amount": 50000,
+      "reason": "đi làm sớm",
+      "createdAt": "2026-07-07T07:59:48.801Z"
+    },
+    {
+      "id": "1436271d-f5a0-489c-b26f-cf80cdc65958",
+      "employeeId": "e1",
+      "amount": 50000,
+      "reason": "sai quy định",
+      "createdAt": "2026-07-07T08:00:06.392Z"
+    }
+  ],
+  "bonuses": []
+}

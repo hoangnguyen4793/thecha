@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản trị chấm công - Chấm Công Quán</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="admin-page-header">
+      <nav class="admin-page-nav" aria-label="Điều hướng quản trị">
+        <a class="brand brand--dark" href="/" aria-label="Chấm Công Quán">
+          <span class="brand__mark">C</span>
+          <span>Chấm Công Quán</span>
+        </a>
+        <a class="button button--secondary" href="/">Về trang chấm công</a>
+      </nav>
+    </header>
+
+    <main id="app" class="admin-page-main">
+      <section class="status-band" aria-label="Trạng thái nhanh">
+        <div>
+          <span class="metric" id="todayCheckins">0</span>
+          <span class="metric-label">Ca đã vào hôm nay</span>
+        </div>
+        <div>
+          <span class="metric" id="activeShifts">0</span>
+          <span class="metric-label">Ca đang làm</span>
+        </div>
+        <div>
+          <span class="metric" id="payrollTotal">0 đ</span>
+          <span class="metric-label">Lương dự kiến tháng này</span>
+        </div>
+      </section>
+
+      <section class="admin-area" id="admin">
+        <div class="section-heading">
+          <p class="eyebrow">Tài khoản quản trị</p>
+          <h2>Quản lý nhân viên, lương và báo cáo</h2>
+        </div>
+
+        <div class="admin-grid">
+          <form class="panel admin-form" id="adminLoginForm">
+            <h3>Đăng nhập quản trị</h3>
+            <label>
+              Tên đăng nhập
+              <input id="adminCode" type="text" placeholder="admin" autocomplete="username" required />
+            </label>
+            <label>
+              Mật khẩu
+              <input id="adminPin" type="password" placeholder="••••••" autocomplete="current-password" required />
+            </label>
+            <button class="button button--primary" type="submit">Đăng nhập quản trị</button>
+            <p class="form-error is-hidden" id="adminLoginError" role="alert"></p>
+          </form>
+
+          <section class="panel admin-tools">
+            <h3>Bảng tính lương</h3>
+            <div class="quick-actions is-hidden" id="adminQuickActions">
+              <button class="button button--secondary" data-toggle-panel="employeeForm" type="button">Thêm nhân viên</button>
+              <button class="button button--secondary" data-toggle-panel="adminPasswordForm" type="button">Đổi mật khẩu</button>
+              <button class="button button--secondary" data-toggle-panel="bonusForm" type="button">Thưởng nhân viên</button>
+              <button class="button button--secondary" data-toggle-panel="penaltyForm" type="button">Phạt nhân viên</button>
+            </div>
+            <div class="tool-row">
+              <a class="button button--dark is-hidden" id="exportCsv" href="/api/report.xlsx">Xuất báo cáo Excel</a>
+              <button class="button button--secondary is-hidden" id="adminLogout" type="button">Đăng xuất quản trị</button>
+            </div>
+            <p class="admin-note" id="adminNotice">Chỉ quản trị viên đã đăng nhập mới xem và sửa được bảng lương.</p>
+          </section>
+
+          <form class="panel admin-form is-hidden" id="employeeForm">
+            <h3>Thêm nhân viên</h3>
+            <label>
+              Họ tên
+              <input id="newName" type="text" placeholder="Nguyễn Văn A" />
+            </label>
+            <label>
+              Tên đăng nhập
+              <input id="newCode" type="text" placeholder="NV004" />
+            </label>
+            <label>
+              Mã PIN
+              <input id="newPin" type="text" placeholder="4444" />
+            </label>
+            <label>
+              Loại lương
+              <select id="newType">
+                <option value="hourly">Theo giờ</option>
+                <option value="monthly">Toàn thời gian theo tháng</option>
+              </select>
+            </label>
+            <label>
+              Mức lương
+              <input id="newRate" type="number" min="0" step="1000" placeholder="35000" />
+            </label>
+            <button class="button button--primary" type="submit">Thêm nhân viên</button>
+          </form>
+
+          <form class="panel admin-form is-hidden" id="adminPasswordForm">
+            <h3>Đổi mật khẩu quản trị</h3>
+            <label>
+              Mật khẩu hiện tại
+              <input id="adminCurrentPin" type="password" autocomplete="current-password" required />
+            </label>
+            <label>
+              Mật khẩu mới
+              <input id="adminNewPin" type="password" autocomplete="new-password" required />
+            </label>
+            <label>
+              Nhập lại mật khẩu mới
+              <input id="adminConfirmPin" type="password" autocomplete="new-password" required />
+            </label>
+            <button class="button button--dark" type="submit">Cập nhật mật khẩu</button>
+            <p class="form-status is-hidden" id="adminPasswordStatus" role="status"></p>
+          </form>
+        </div>
+
+        <form class="panel admin-form is-hidden" id="bonusForm">
+          <h3>Thưởng nhân viên</h3>
+          <label>
+            Nhân viên
+            <select id="bonusEmployee"></select>
+          </label>
+          <label>
+            Mức thưởng
+            <input id="bonusAmount" type="number" min="0" step="1000" placeholder="50000" />
+          </label>
+          <label>
+            Lý do thưởng
+            <input id="bonusReason" type="text" placeholder="Làm tốt, hỗ trợ ca, đạt doanh số..." />
+          </label>
+          <button class="button button--dark" type="submit">Thêm thưởng</button>
+          <p class="form-status is-hidden" id="bonusStatus" role="status"></p>
+        </form>
+
+        <form class="panel admin-form is-hidden" id="penaltyForm">
+          <h3>Phạt nhân viên</h3>
+          <label>
+            Nhân viên
+            <select id="penaltyEmployee"></select>
+          </label>
+          <label>
+            Mức phạt
+            <input id="penaltyAmount" type="number" min="0" step="1000" placeholder="50000" />
+          </label>
+          <label>
+            Lý do phạt
+            <input id="penaltyReason" type="text" placeholder="Đi muộn, làm sai quy trình..." />
+          </label>
+          <button class="button button--dark" type="submit">Thêm phạt</button>
+          <p class="form-status is-hidden" id="penaltyStatus" role="status"></p>
+        </form>
+
+        <section class="panel table-panel">
+          <div class="table-header">
+            <h3>Bảng lương nhân viên</h3>
+            <div class="table-tools">
+              <label>
+                Tháng lương
+                <input id="adminPayrollMonth" type="month" />
+              </label>
+              <span id="adminCount">0 nhân viên</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="detail-table">
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Tên đăng nhập</th>
+                  <th>Loại lương</th>
+                  <th>Mức lương</th>
+                  <th>Giờ công</th>
+                  <th>Lương trước phạt</th>
+                  <th>Tổng thưởng</th>
+                  <th>Tổng phạt</th>
+                  <th>Lương còn lại</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="adminRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="table-header">
+            <h3>Danh sách thưởng</h3>
+            <span id="bonusCount">0 phiếu thưởng</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Tên đăng nhập</th>
+                  <th>Ngày thưởng</th>
+                  <th>Mức thưởng</th>
+                  <th>Lý do</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="bonusRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="table-header">
+            <h3>Bảng lương chi tiết</h3>
+            <span id="adminDetailCount">0 ca</span>
+          </div>
+          <div class="filter-bar">
+            <label>
+              Từ ngày
+              <input id="detailDateFrom" type="date" />
+            </label>
+            <label>
+              Đến ngày
+              <input id="detailDateTo" type="date" />
+            </label>
+            <button class="button button--secondary" id="clearDetailFilter" type="button">Xóa lọc</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Tên đăng nhập</th>
+                  <th>Ngày</th>
+                  <th>Giờ vào</th>
+                  <th>Giờ ra</th>
+                  <th>Số giờ</th>
+                  <th>Loại lương</th>
+                  <th>Lương ca</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="adminDetailRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="table-header">
+            <h3>Danh sách phạt</h3>
+            <span id="penaltyCount">0 phiếu phạt</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nhân viên</th>
+                  <th>Tên đăng nhập</th>
+                  <th>Ngày phạt</th>
+                  <th>Mức phạt</th>
+                  <th>Lý do</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="penaltyRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
