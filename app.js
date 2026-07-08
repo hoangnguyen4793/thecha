@@ -185,7 +185,7 @@ function renderWifi() {
     : `Không thuộc mạng ${wifiStatus.networkName}`;
   els.wifiHelp.textContent = wifiStatus.allowed
     ? `IP thiết bị: ${wifiStatus.ip}. Máy chủ cho phép chấm công.`
-    : `IP thiết bị: ${wifiStatus.ip}. Hãy kết nối WiFi quán rồi mở trang qua địa chỉ máy chủ nội bộ.`;
+    : `IP thiết bị: ${wifiStatus.ip}. Nếu đã kết nối WiFi quán mà vẫn bị chặn, hãy tắt VPN/iCloud Private Relay hoặc "Giới hạn theo dõi địa chỉ IP" trên WiFi này.`;
 }
 
 function renderEmployee() {
@@ -359,6 +359,7 @@ function renderAdminDetailRow(shift) {
       <td>
         <button class="button button--secondary table-action" data-edit-shift="${shift.id}" type="button">Sửa</button>
         <button class="button button--dark table-action is-hidden" data-save-shift="${shift.id}" type="button">Lưu</button>
+        <button class="button button--danger table-action" data-delete-shift="${shift.id}" type="button">Xóa</button>
       </td>
     </tr>
   `;
@@ -653,6 +654,25 @@ els.adminDetailRows?.addEventListener("click", async (event) => {
     row.querySelector("[data-save-shift]")?.classList.add("is-hidden");
     row.classList.add("is-editing");
     els.adminNotice.textContent = "Đang sửa giờ vào/giờ ra. Khi thay đổi dữ liệu, nút Lưu sẽ xuất hiện.";
+    return;
+  }
+
+  const deleteId = event.target.dataset.deleteShift;
+  if (deleteId && row) {
+    const employeeName = row.querySelector("td strong")?.textContent || "nhân viên này";
+    const shiftDate = row.children[2]?.textContent || "ngày chấm công này";
+    const confirmed = window.confirm(`Bạn có chắc chắn muốn xóa ca chấm công của ${employeeName} ngày ${shiftDate} không?`);
+    if (!confirmed) {
+      els.adminNotice.textContent = "Đã hủy xóa ca chấm công.";
+      return;
+    }
+    try {
+      await api(`/api/shifts/${deleteId}`, { method: "DELETE", body: "{}" });
+      await refresh();
+      els.adminNotice.textContent = "Đã xóa ca chấm công và tính lại bảng lương.";
+    } catch (error) {
+      els.adminNotice.textContent = error.message;
+    }
     return;
   }
 

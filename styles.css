@@ -198,6 +198,11 @@ a {
   color: #fff;
 }
 
+.button--danger {
+  background: var(--red);
+  color: #fff;
+}
+
 main {
   margin-top: -34px;
   position: relative;

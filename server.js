@@ -12,7 +12,7 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABA
 const SUPABASE_STATE_KEY = process.env.SUPABASE_STATE_KEY || "cham-cong-quan";
 const USE_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_KEY);
 const WIFI_NAME = process.env.CAFE_WIFI_NAME || "The -Cha";
-const allowedPrefixes = (process.env.CAFE_ALLOWED_IP_PREFIXES || "192.168.1.")
+const allowedPrefixes = (process.env.CAFE_ALLOWED_IP_PREFIXES || "192.168.1.,127.0.0.1,::1")
   .split(",")
   .map((item) => item.trim())
   .filter(Boolean);
@@ -134,7 +134,13 @@ function makeId() {
 }
 
 function normalizeIp(request) {
-  return (request.socket.remoteAddress || "").replace(/^::ffff:/, "");
+  const forwardedFor = request.headers["x-forwarded-for"];
+  const forwardedIp = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
+  const realIp = request.headers["x-real-ip"];
+  const ip = String(forwardedIp || realIp || request.socket.remoteAddress || "")
+    .split(",")[0]
+    .trim();
+  return ip.replace(/^::ffff:/, "");
 }
 
 function wifiStatus(request) {
@@ -744,8 +750,9 @@ async function route(request, response) {
     if (request.method === "POST" && pathName === "/api/check-in") {
       const session = requireEmployee(request, response);
       if (!session) return;
-      if (!wifiStatus(request).allowed) {
-        sendJson(response, 403, { message: "Thiết bị chưa ở đúng mạng WiFi của quán." });
+      const wifi = wifiStatus(request);
+      if (!wifi.allowed) {
+        sendJson(response, 403, { message: `Thiết bị chưa ở đúng mạng WiFi của quán. IP đang truy cập: ${wifi.ip}.` });
         return;
       }
       if (openShift(session.employeeId)) {
@@ -761,8 +768,9 @@ async function route(request, response) {
     if (request.method === "POST" && pathName === "/api/check-out") {
       const session = requireEmployee(request, response);
       if (!session) return;
-      if (!wifiStatus(request).allowed) {
-        sendJson(response, 403, { message: "Thiết bị chưa ở đúng mạng WiFi của quán." });
+      const wifi = wifiStatus(request);
+      if (!wifi.allowed) {
+        sendJson(response, 403, { message: `Thiết bị chưa ở đúng mạng WiFi của quán. IP đang truy cập: ${wifi.ip}.` });
         return;
       }
       const shift = openShift(session.employeeId);
@@ -843,6 +851,19 @@ async function route(request, response) {
         sendJson(response, 400, { message: "Giờ ra không được nhỏ hơn giờ vào." });
         return;
       }
+      await saveData();
+      sendJson(response, 200, { ok: true });
+      return;
+    }
+
+    if (shiftMatch && request.method === "DELETE") {
+      if (!requireAdmin(request, response)) return;
+      const shift = data.shifts.find((item) => item.id === shiftMatch[1]);
+      if (!shift) {
+        sendJson(response, 404, { message: "Không tìm thấy ca làm." });
+        return;
+      }
+      data.shifts = data.shifts.filter((item) => item.id !== shiftMatch[1]);
       await saveData();
       sendJson(response, 200, { ok: true });
       return;

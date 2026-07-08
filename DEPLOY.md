@@ -62,7 +62,7 @@ Trong phần Environment Variables của Web Service, thêm các biến sau:
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role key lấy từ Supabase |
 | `SUPABASE_STATE_KEY` | `cham-cong-quan` |
 | `CAFE_WIFI_NAME` | Tên WiFi quán, ví dụ `The -Cha` |
-| `CAFE_ALLOWED_IP_PREFIXES` | IP public hoặc dải IP public của mạng quán |
+| `CAFE_ALLOWED_IP_PREFIXES` | IP public hoặc dải IP được phép, ví dụ `14.241.72.12,192.168.1.` |
 
 Quan trọng: Khi chạy trên host public, không dùng được IP nội bộ dạng `192.168.1.x` để xác nhận WiFi. IP đó chỉ có ý nghĩa trong mạng nội bộ. Muốn giới hạn nhân viên chỉ chấm công khi đang ở WiFi quán, hãy dùng IP public của quán.
 
@@ -71,7 +71,7 @@ Cách lấy IP public của quán:
 1. Kết nối điện thoại hoặc máy tính vào WiFi quán.
 2. Vào Google và tìm `what is my ip`.
 3. Copy IP hiện ra, ví dụ `113.161.10.25`.
-4. Nhập vào Render: `CAFE_ALLOWED_IP_PREFIXES=113.161.10.25`
+4. Nhập vào Render, ví dụ: `CAFE_ALLOWED_IP_PREFIXES=113.161.10.25,192.168.1.`
 
 Nếu IP quán hay thay đổi, có thể cần dùng mạng có IP tĩnh hoặc cập nhật lại biến này khi IP đổi.
 
