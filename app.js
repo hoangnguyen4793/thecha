@@ -226,6 +226,11 @@ function renderEmployeeShiftRow(shift, employee) {
   `;
 }
 
+function setPanelToggleLabel(panelName, visibleLabel, hiddenLabel) {
+  const button = els.adminQuickActions?.querySelector(`[data-toggle-panel="${panelName}"]`);
+  if (button) button.textContent = adminPanelState[panelName] ? visibleLabel : hiddenLabel;
+}
+
 function renderAdmin() {
   if (!els.adminLoginForm) return;
   const isAdmin = session?.role === "admin" && adminDashboard;
@@ -242,10 +247,10 @@ function renderAdmin() {
   els.penaltyForm.classList.toggle("is-hidden", !isAdmin || !adminPanelState.penaltyForm);
   els.exportCsv.classList.toggle("is-hidden", !isAdmin);
   els.adminLogout.classList.toggle("is-hidden", !isAdmin);
-  els.adminQuickActions.querySelector('[data-toggle-panel="employeeForm"]').textContent = adminPanelState.employeeForm ? "Ẩn thêm nhân viên" : "Thêm nhân viên";
-  els.adminQuickActions.querySelector('[data-toggle-panel="adminPasswordForm"]').textContent = adminPanelState.adminPasswordForm ? "Ẩn đổi mật khẩu" : "Đổi mật khẩu";
-  els.adminQuickActions.querySelector('[data-toggle-panel="bonusForm"]').textContent = adminPanelState.bonusForm ? "Ẩn thưởng nhân viên" : "Thưởng nhân viên";
-  els.adminQuickActions.querySelector('[data-toggle-panel="penaltyForm"]').textContent = adminPanelState.penaltyForm ? "Ẩn phạt nhân viên" : "Phạt nhân viên";
+  setPanelToggleLabel("employeeForm", "Ẩn thêm nhân viên", "Thêm nhân viên");
+  setPanelToggleLabel("adminPasswordForm", "Ẩn đổi mật khẩu", "Đổi mật khẩu");
+  setPanelToggleLabel("bonusForm", "Ẩn thưởng nhân viên", "Thưởng nhân viên");
+  setPanelToggleLabel("penaltyForm", "Ẩn phạt nhân viên", "Phạt nhân viên");
 
   if (!isAdmin) {
     els.adminCount.textContent = "0 nhân viên";
