@@ -12,10 +12,7 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABA
 const SUPABASE_STATE_KEY = process.env.SUPABASE_STATE_KEY || "cham-cong-quan";
 const USE_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_KEY);
 const WIFI_NAME = process.env.CAFE_WIFI_NAME || "The -Cha";
-const allowedPrefixes = (process.env.CAFE_ALLOWED_IP_PREFIXES || "192.168.1.,127.0.0.1,::1")
-  .split(",")
-  .map((item) => item.trim())
-  .filter(Boolean);
+const REQUIRE_WIFI = false;
 
 const sessions = new Map();
 const demoData = {
@@ -145,8 +142,7 @@ function normalizeIp(request) {
 
 function wifiStatus(request) {
   const ip = normalizeIp(request);
-  const allowed = allowedPrefixes.some((prefix) => ip.startsWith(prefix));
-  return { allowed, ip, networkName: WIFI_NAME };
+  return { allowed: true, ip, networkName: WIFI_NAME, requireWifi: REQUIRE_WIFI, matchedPrefix: "" };
 }
 
 function parseCookies(request) {
@@ -211,11 +207,6 @@ function daysInMonth(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 }
 
-function monthlyShiftPay(employee, shift) {
-  if (employee.type !== "monthly" || !shift.checkOut) return 0;
-  return employee.rate / daysInMonth(new Date(shift.checkIn));
-}
-
 function openShift(employeeId) {
   return data.shifts.find((shift) => shift.employeeId === employeeId && !shift.checkOut);
 }
@@ -227,7 +218,7 @@ function employeePay(employee, selectedMonth = monthParts()) {
 
 function employeeGrossPay(employee, selectedMonth = monthParts()) {
   if (employee.type === "monthly") {
-    return currentMonthShifts(employee.id, selectedMonth).reduce((total, shift) => total + monthlyShiftPay(employee, shift), 0);
+    return employee.rate;
   }
   return currentMonthShifts(employee.id, selectedMonth).reduce((total, shift) => total + shiftHours(shift) * employee.rate, 0);
 }
@@ -285,7 +276,7 @@ function employeeDashboard(employeeId) {
     .map((shift) => ({
         ...shift,
         hours: shiftHours(shift),
-        pay: employee.type === "monthly" ? monthlyShiftPay(employee, shift) : shiftHours(shift) * employee.rate
+        pay: employee.type === "monthly" ? 0 : shiftHours(shift) * employee.rate
       }));
   const penaltyTotal = employeePenaltyTotal(employee.id);
   const bonusTotal = employeeBonusTotal(employee.id);
@@ -335,11 +326,10 @@ function adminDashboard(month) {
           employeeCode: employee.code,
           type: employee.type,
           rate: employee.rate,
-          dailyRate: employee.type === "monthly" ? employee.rate / daysInMonth(new Date(shift.checkIn)) : null,
           checkIn: shift.checkIn,
           checkOut: shift.checkOut,
           hours,
-          pay: employee.type === "monthly" ? monthlyShiftPay(employee, shift) : hours * employee.rate
+          pay: employee.type === "monthly" ? 0 : hours * employee.rate
         };
       })
       .filter(Boolean)
@@ -750,11 +740,6 @@ async function route(request, response) {
     if (request.method === "POST" && pathName === "/api/check-in") {
       const session = requireEmployee(request, response);
       if (!session) return;
-      const wifi = wifiStatus(request);
-      if (!wifi.allowed) {
-        sendJson(response, 403, { message: `Thiết bị chưa ở đúng mạng WiFi của quán. IP đang truy cập: ${wifi.ip}.` });
-        return;
-      }
       if (openShift(session.employeeId)) {
         sendJson(response, 409, { message: "Bạn đang trong ca, không thể vào ca lần nữa." });
         return;
@@ -768,11 +753,6 @@ async function route(request, response) {
     if (request.method === "POST" && pathName === "/api/check-out") {
       const session = requireEmployee(request, response);
       if (!session) return;
-      const wifi = wifiStatus(request);
-      if (!wifi.allowed) {
-        sendJson(response, 403, { message: `Thiết bị chưa ở đúng mạng WiFi của quán. IP đang truy cập: ${wifi.ip}.` });
-        return;
-      }
       const shift = openShift(session.employeeId);
       if (!shift) {
         sendJson(response, 409, { message: "Bạn chưa có ca đang làm." });
@@ -1012,7 +992,7 @@ initializeData()
       console.log(`Cham Cong Quan dang chay tai http://localhost:${PORT}`);
       console.log(`Nguon du lieu: ${USE_SUPABASE ? "Supabase" : "data.json local"}`);
       console.log(`Admin co the truy cap qua IP may chu, vi du http://<IP-may-chu>:${PORT}`);
-      console.log(`Dai IP WiFi hop le: ${allowedPrefixes.join(", ")}`);
+      console.log("Khong gioi han WiFi/IP cho nhan vien cham cong.");
     });
   })
   .catch((error) => {

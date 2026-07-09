@@ -10,8 +10,8 @@ services:
         value: 20
       - key: CAFE_WIFI_NAME
         value: The -Cha
-      - key: CAFE_ALLOWED_IP_PREFIXES
-        value: 14.241.72.12,192.168.1.
+      - key: CAFE_REQUIRE_WIFI
+        value: false
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY

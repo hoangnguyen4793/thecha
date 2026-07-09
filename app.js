@@ -6,7 +6,7 @@ const timeFormat = new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "
 let session = null;
 let employeeDashboard = null;
 let adminDashboard = null;
-let wifiStatus = { allowed: false, ip: "-", networkName: WIFI_NAME };
+let wifiStatus = { allowed: true, ip: "-", networkName: WIFI_NAME, requireWifi: false };
 let detailDateFrom = "";
 let detailDateTo = "";
 let adminPayrollMonth = toMonthInput(new Date());
@@ -172,20 +172,7 @@ function renderClock() {
 
 function renderWifi() {
   if (!els.wifiBox) return;
-  if (session?.role === "admin") {
-    els.wifiBox.classList.add("is-ok");
-    els.wifiText.textContent = "Quản trị không bị giới hạn WiFi";
-    els.wifiHelp.textContent = `IP truy cập: ${wifiStatus.ip}. Giới hạn WiFi chỉ áp dụng cho nhân viên khi vào ca/ra ca.`;
-    return;
-  }
-
-  els.wifiBox.classList.toggle("is-ok", wifiStatus.allowed);
-  els.wifiText.textContent = wifiStatus.allowed
-    ? `Đang ở mạng ${wifiStatus.networkName}`
-    : `Không thuộc mạng ${wifiStatus.networkName}`;
-  els.wifiHelp.textContent = wifiStatus.allowed
-    ? `IP thiết bị: ${wifiStatus.ip}. Máy chủ cho phép chấm công.`
-    : `IP thiết bị: ${wifiStatus.ip}. Nếu đã kết nối WiFi quán mà vẫn bị chặn, hãy tắt VPN/iCloud Private Relay hoặc "Giới hạn theo dõi địa chỉ IP" trên WiFi này.`;
+  els.wifiBox.classList.add("is-hidden");
 }
 
 function renderEmployee() {
@@ -212,24 +199,22 @@ function renderEmployee() {
   els.employeeRole.textContent = employee.type === "monthly" ? "Toàn thời gian" : "Bán thời gian";
   els.employeeName.textContent = `${employee.name} (${employee.code})`;
   els.employeePayRate.textContent = employee.type === "monthly"
-    ? `${formatMoney(employee.rate)} / tháng`
+    ? `${formatMoney(employee.rate)} / tháng cố định`
     : `${formatMoney(employee.rate)} / giờ`;
   els.expectedPay.textContent = formatMoney(totals.pay);
   els.totalHours.textContent = `${totals.hours.toFixed(1)}h`;
   els.shiftCount.textContent = shifts.length;
   els.shiftStatus.textContent = openShift ? "Đang trong ca" : "Chưa vào ca";
-  els.checkInBtn.disabled = !wifiStatus.allowed || Boolean(openShift);
-  els.checkOutBtn.disabled = !wifiStatus.allowed || !openShift;
-  els.employeeNotice.textContent = wifiStatus.allowed
-    ? "Bạn chỉ chấm công cho chính tài khoản đang đăng nhập."
-    : "Bạn chưa ở đúng mạng WiFi của quán nên chưa thể chấm công.";
+  els.checkInBtn.disabled = Boolean(openShift);
+  els.checkOutBtn.disabled = !openShift;
+  els.employeeNotice.textContent = "Bạn chỉ chấm công cho chính tài khoản đang đăng nhập.";
   els.employeeRows.innerHTML = shifts.length
     ? shifts.map((shift) => renderEmployeeShiftRow(shift, employee)).join("")
     : `<tr><td class="empty-row" colspan="5">Chưa có dữ liệu chấm công trong tháng này</td></tr>`;
 }
 
 function renderEmployeeShiftRow(shift, employee) {
-  const pay = employee.type === "monthly" ? "Tính theo tháng" : formatMoney(shift.pay);
+  const pay = employee.type === "monthly" ? "Lương tháng cố định" : formatMoney(shift.pay);
   return `
     <tr>
       <td>${formatDateTime(shift.checkIn, "date")}</td>
@@ -304,8 +289,11 @@ function renderAdmin() {
           <option value="monthly" ${employee.type === "monthly" ? "selected" : ""}>Toàn thời gian</option>
         </select>
       </td>
-      <td><input data-admin-rate="${employee.id}" type="number" min="0" step="1000" value="${employee.rate}" /></td>
-      <td>${employee.hours.toFixed(1)}h</td>
+      <td>
+        <input data-admin-rate="${employee.id}" type="number" min="0" step="1000" value="${employee.rate}" />
+        ${employee.type === "monthly" ? "<small>Lương tháng cố định</small>" : ""}
+      </td>
+      <td>${employee.type === "monthly" ? `${employee.hours.toFixed(1)}h tượng trưng` : `${employee.hours.toFixed(1)}h`}</td>
       <td><strong>${formatMoney(employee.grossPay)}</strong></td>
       <td>${formatMoney(employee.bonusTotal)}</td>
       <td>${formatMoney(employee.penaltyTotal)}</td>
@@ -355,7 +343,7 @@ function renderAdminDetailRow(shift) {
       <td data-shift-check-out-cell data-value="${toDatetimeLocal(shift.checkOut)}">${formatDateTime(shift.checkOut, "time")}</td>
       <td>${shift.checkOut ? `${shift.hours.toFixed(2)}h` : "Đang làm"}</td>
       <td>${shift.type === "monthly" ? "Toàn thời gian" : "Theo giờ"}</td>
-      <td>${shift.type === "monthly" ? "Tính theo tháng" : formatMoney(shift.pay)}</td>
+      <td>${shift.type === "monthly" ? "Lương tháng cố định" : formatMoney(shift.pay)}</td>
       <td>
         <button class="button button--secondary table-action" data-edit-shift="${shift.id}" type="button">Sửa</button>
         <button class="button button--dark table-action is-hidden" data-save-shift="${shift.id}" type="button">Lưu</button>
